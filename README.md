@@ -1,8 +1,9 @@
 # AWS Annonymizer
-
 Direct upload to Amazon S3 in a Python Flask application.
 (Ideally the static assets are processed (minified / compressed) and served from a CDN instead of this app itself.)
-
+<br><br>
+<sup>**Disclaimer:** This is not a real service provided by Amazon Web Services.  
+This repository refers to a final project in a cloud computing course.</sup>
 ## Running the application
 
 * Set environment variables for your AWS access key, secret, and bucket name (at `~/.aws` directory)
