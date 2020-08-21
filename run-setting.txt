@@ -1,0 +1,6 @@
+docker run -d --name "uploader" -p 5000:5000 \
+    -e "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" \
+    -e "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" \
+    -e "S3_BUCKET=${S3_BUCKET}" \
+    -e "S3_REGION=${S3_REGION}" \
+    aws-uploads-sample
