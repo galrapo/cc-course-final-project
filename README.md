@@ -1,12 +1,11 @@
-# AWS Direct Upload Sample
+# AWS Annonymizer
 
-Simple example demonstrating how to accomplish a direct upload to Amazon S3 in a Python Flask application.
-
-Ideally the static assets are processed (minified / compressed) and served from a CDN instead of this app itself.
+Direct upload to Amazon S3 in a Python Flask application.
+(Ideally the static assets are processed (minified / compressed) and served from a CDN instead of this app itself.)
 
 ## Running the application
 
-* Set environment variables for your AWS access key, secret, and bucket name
+* Set environment variables for your AWS access key, secret, and bucket name (at `~/.aws` directory)
 * Run:
 
     ```bash
