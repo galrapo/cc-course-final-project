@@ -66,7 +66,7 @@ def select_cols_form():
     print ('x')
     # # collect schema of data stored in s3
     req_data = request.data
-    print req_data
+    print(req_data)
     # R: can return 200 ok
     return render_template("column_select.html")
     # return redirect(url_for("getcols"))
