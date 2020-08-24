@@ -321,7 +321,7 @@ class GlueWrapper(object):
 
 
 def test():
-    glue_wrapper = GlueWrapper(aws_access_key_id="AKIAI3Y2DTRSUEKNVBHQ",
-                               aws_secret_access_key="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")
+    glue_wrapper = GlueWrapper(aws_access_key_id="",
+                               aws_secret_access_key="EhIL7+WB1/W2Kz3h/")
     glue_wrapper.anonymize(s3_bucket='hw2-data', s3_path="/folder/data", s3_bucket_dst='hw2-data-out',
                            fields={"LicensePlate": True, "Sensor": True, "Time": False}, data_format='json')
