@@ -8,6 +8,7 @@ COPY requirements.txt /usr/src/app/requirements.txt
 WORKDIR /usr/src/app/
 RUN pip install -r requirements.txt
 COPY . /usr/src/app/
+COPY ./templates/static /usr/src/app/templates/static
 
 EXPOSE 5000
 ENTRYPOINT ["/usr/local/bin/gunicorn"]

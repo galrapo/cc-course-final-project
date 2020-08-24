@@ -1,0 +1,204 @@
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <style>
+            footer {
+                text-align: center;
+                padding: 3px;
+                background-color: dodgerblue;
+                color: white;
+                clear: both;
+                position:absolute;
+                bottom:0;
+                width:100%;
+                font-size: 13px;
+                font-family: "Lucinda Sans Unicode", sans-serif;
+            }
+            input[type="text"]{
+                text-align: center;
+            }
+            input[type=submit] {
+                width: 12em;
+                height: 4em;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 8px;
+                background-color: linen;
+                font-family: Noto Sans, sans-serif;
+            }
+        </style>
+    </head>
+    <body>
+      <br>
+      <div style="text-align: center;font-size: x-large;">
+          <img src="https://final-project-app.s3.amazonaws.com/images/aws-annonymizer-logo.png" alt="AWS Annonymizer logo" style="width:250px;height:250px;">
+          <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
+          <p style="font-size: 17px;margin-bottom:0.4cm; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif";><big><strong>
+              Anonymize Data From Path (file or directory) <br>
+              <sub>Currently Working With S3, RDS, DynamoDB</sub>
+          </strong></big></p>
+      </div>
+      <br>
+{#      <form method="POST" action="/getcols/">#}
+      <form>
+          <input type="hidden" id="request-url" name="request-url" value="#">
+          <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
+              <p id="status"; style="font-size:21px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
+                  Enter AWS Credentials</p>
+              <label><small><strong>Access Key ID: <input type="text" id="aws-access-key-id"> </strong></small></label>
+              &nbsp;&nbsp;&nbsp;&nbsp;
+              <label><small><strong>Secret Access key: <input type="text" id="aws-access-secret-key"> </strong></small></label>
+          </div>
+          <br><br>
+          <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
+                <p id="status"; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
+                    Select AWS Data Source And A Target To Collect The Anonymized Data</p>
+                <strong>Source:</strong>&nbsp;&nbsp;
+                <label><small>Bucket:  <input type="text" id="source-s3-bucket" placeholder="S3 bucket name"> </small></label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label><small>Region:  <input type="text" id="source-s3-region" placeholder="S3 bucket region"> </small></label> <br>
+                <br>
+                <strong>Target:</strong>&nbsp;&nbsp;
+                <label><small>Bucket:  <input type="text" id="target-s3-bucket" placeholder="S3 bucket name"> </small></label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label><small>Region:  <input type="text" id="target-s3-region" placeholder="S3 Bucket region"> </small></label>
+                <br><br><br><br><br><br>
+                <input type="button" id="submit-anonymize" value="Get Schema" size="">
+          </div>
+      </form>
+
+        <script type="text/javascript">
+
+        /*
+          Function to carry out the actual POST request to S3 using the signed request from the Python app.
+        */
+        function uploadFile(file, s3Data, url){
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', s3Data.url);
+          xhr.setRequestHeader('x-amz-acl', 'public-read');
+
+          const postData = new FormData();
+          for(key in s3Data.fields){
+            postData.append(key, s3Data.fields[key]);
+          }
+          postData.append('file', file);
+
+          xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+              if(xhr.status === 200 || xhr.status === 204){
+                document.getElementById('download-url').href = url;
+                document.getElementById('report-url').value = url;
+              }
+              else{
+                alert('Could not upload file.');
+              }
+            }
+          };
+          xhr.send(postData);
+        }
+
+        const anonymizeColumnsUrl = "/submit/"
+        //const anonymizeColumnsUrl = "https://nvcdpkqa5k.execute-api.us-east-1.amazonaws.com/v1/define-columns"
+        function sendAnonymizationRequest(requestPayload) {
+            console.log("sendAnonymizationRequest")
+            // requestPayload includes AWS credentials and source/target bucket and region
+            const req  = new XMLHttpRequest();
+            const postData = new FormData();
+            req.open('POST', anonymizeColumnsUrl) // TODO - check validity
+            req.setRequestHeader('x-amz-acl', 'public-read');
+            req.setRequestHeader('Content-Type', 'application/json')
+            for (let propertyName in requestPayload) {
+                if (requestPayload.hasOwnProperty(propertyName)) {
+                    postData.append(propertyName, requestPayload[propertyName])
+                }
+            }
+            req.onreadystatechange = function() {
+                if (this.readyState == 4 && this.status == 200) {
+                    let payload = '?a=1&b=2'
+                    window.location.href = '/getcols'+payload;
+                }
+            }
+            console.log(requestPayload)
+            req.send(requestPayload)
+            console.log("request sent")
+        }
+
+        /*
+          Function to get the temporary signed request from the Python app.
+          If request successful, continue to upload the file using this signed
+          request.
+        */
+        function getSignedRequest(file){
+          const xhr = new XMLHttpRequest();
+          xhr.open('GET', `/sign-s3?file-name=${file.name}&file-type=${file.type}`);
+          xhr.onreadystatechange = () => {
+            if(xhr.readyState === 4){
+              if(xhr.status === 200){
+                const response = JSON.parse(xhr.responseText);
+                uploadFile(file, response.data, response.url);
+              }
+              else{
+                alert('Could not get signed URL.');
+              }
+            }
+          };
+          xhr.send();
+        }
+
+        function getS3Request() {
+
+        }
+
+        /*
+           Function called when file input updated. If there is a file selected, then
+           start upload procedure by asking for a signed request from the app.
+        */
+        function initUpload(){
+          const accessKeyId = document.getElementById('aws-access-key-id').value;
+          const accessSecretKey = document.getElementById('aws-access-secret-key').value;
+          if(!accessKeyId || !accessSecretKey){
+              return alert('Missing Credentials.');
+          }
+          const sourceS3Bucket = document.getElementById('source-s3-bucket').value;
+          const sourceS3Region = document.getElementById('source-s3-region').value;
+          if(!sourceS3Bucket || !sourceS3Region){
+              return alert('Missing source S3 data.');
+          }
+          const targetS3Bucket = document.getElementById('target-s3-bucket').value;
+          const targetS3Region = document.getElementById('target-s3-region').value;
+          if(!targetS3Bucket || !targetS3Region){
+              return alert('Missing target S3 data.');
+          }
+          console.log("validation done")
+          let payload = {
+              "aws-access-key-id": accessKeyId,
+              "aws-access-secret-key": accessSecretKey,
+              "source-s3-bucket": sourceS3Bucket,
+              "source-s3-region": sourceS3Region,
+              "target-s3-bucket": targetS3Bucket,
+              "target-s3-region": targetS3Region
+          }
+          sendAnonymizationRequest(payload);
+        }
+
+        /*
+           Bind listeners when the page loads - to anonymize request submission.
+        */
+        (() => {
+            document.getElementById('submit-anonymize').addEventListener("click", initUpload)
+            console.log("Click")
+          {#document.getElementById('file-input').onchange = initUpload;#}
+        })();
+
+        </script>
+    </body>
+
+    <footer>
+        <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all">
+            <strong>Built by:</strong>&nbsp;&nbsp; Gal Rapoport and Ofri Masad.
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Provided as a final project to a Cloud Computing Course at IDC.
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            August, 2020. &nbsp;&copy;
+        </div>
+    </footer>
+</html>

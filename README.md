@@ -10,13 +10,14 @@ This repository refers to a final project in a cloud computing course.</sup>
 * Run:
 
     ```bash
-    docker build -t aws-uploads-sample .
-    docker run -d --name "uploader" -p 5000:5000 \
+    docker build -t aws-annoymizer .
+ 
+    docker run -d --name "annoymizer" -p 5000:5000 \
         -e "AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}" \
         -e "AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}" \
         -e "S3_BUCKET=${S3_BUCKET}" \
         -e "S3_REGION=${S3_REGION}" \
-        aws-uploads-sample
+        aws-annoymizer
     ```
 
 * Visit [localhost:5000/upload](http://localhost:5000/upload) to try it out
@@ -35,6 +36,10 @@ from botocore.client import Config
 s3 = boto3.client('s3', 'ap-southeast-1',config=Config(s3={'addressing_style':'path'}))
 s3.upload_file('application.py','myBucket','application.py')
 ```
+<br>
+
+You can update the Flask app after modifications by: 
+
 
 ## Source
 
