@@ -371,4 +371,3 @@ class GlueWrapper(object):
             Language='PYTHON'
         )
         print(response)
-
