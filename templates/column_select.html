@@ -27,6 +27,19 @@
                 font-family: Noto Sans, sans-serif;
                 text-align: center;
             }
+
+            .fields {
+                margin: 50px 0 50px 0;
+                text-align: left;
+                width: 30%;
+                position: relative;
+                left: 35%;
+                right: 35%;
+                 border: 1px solid #ccc !important;
+                border-radius: 16px;
+                padding: 30px;
+            }
+
         </style>
     </head>
     <body>
@@ -36,11 +49,43 @@
           <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
       </div>
       <br>
-        1234
+
+        <form method="POST" action="/anonymize">
+        <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
+        <p id="fileds" ; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
+                Data detected in the bucket: {{data_type}}</p>
+
+        <input type="hidden" name="aws-access-key-id" value="{{aws_access_key_id}}">
+        <input type="hidden" name="aws-access-secret-key" value="{{aws_access_secret_key}}">
+        <input type="hidden" name="source-s3-bucket" value="{{src_bucket}}">
+        <input type="hidden" name="source-path" value="{{src_path}}">
+        <input type="hidden" name="source-s3-region" value="{{source_s3_region}}">
+        <input type="hidden" name="target-s3-bucket" value="{{target_bucket}}">
+        <input type="hidden" name="target-path" value="{{target_path}}">
+        <input type="hidden" name="target-s3-region" value="{{target_s3_region}}">
+        <input type="hidden" name="data-type" value="{{data_type}}">
+        <input type="hidden" name="schedule" value="{{schedule}}">
+
+        {% if fileds %}
+        <p style="font-size:15px; margin-bottom:0.3cm;">
+            Please select which columns should be anonymized. <br>Only columns positively checked will be passed:
+        </p>
+            <div class="fields">
+            {% for filed in fileds %}
+                <input type="checkbox" id="{{filed}}" name="field.{{filed}}" value="{{filed}}" checked="checked">
+                <label for="{{filed}}"> {{filed}}</label><br>
+            {% endfor %}
+            </div>
+        {% endif %}
+        <input type="submit" name="submit-anonymize" value="Create Anonymizer" size="">
+        </div>
+        </form>
+
+
 
     </body>
 
-    <footer>
+    <footer style="position: fixed">
         <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all">
             <strong>Built by:</strong>&nbsp;&nbsp; Gal Rapoport and Ofri Masad.
             &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;

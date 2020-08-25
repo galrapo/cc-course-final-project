@@ -10,6 +10,8 @@
 from flask import Flask, render_template, request, redirect, url_for
 from botocore.client import Config
 import os, json, boto3, logging
+import utils
+from glue_wrapper import GlueWrapper
 
 app = Flask(__name__)
 
@@ -26,99 +28,56 @@ def account():
     # Show the upload HTML page:
     return render_template('anonymize_request.html')
 
-
 @app.route("/submit-form/")
 def submit_form():
     return render_template('anonymize_request.html')
-
-
-# Listen for POST requests to yourdomain.com/submit_form/
-# @app.route("/submit-form/", methods=["POST"])
-# def submit_form():
-#     # Collect the data posted from the HTML form in anonymize_request.html:
-#     report = {
-#         "aws-access-key-id": request.form["aws-access-key-id"],
-#         "aws-access-secret-key": request.form["aws-access-secret-key"],
-#         "source-s3-bucket": request.form["source-s3-bucket"],
-#         "source-s3-region": request.form["source-s3-region"],
-#         "target-s3-bucket": request.form["target-s3-bucket"],
-#         "target-s3-region": request.form["target-s3-region"],
-#         "report_url": request.form["report-url"]
-#     }
-#
-#     json_payload = json.dumps(report)
-#     respond = get_cols(bucket="hw2-data",
-#                        prefix="data",
-#                        aws_access_key_id="AKIAITTQNPOEPVRUHQUQ",
-#                        aws_secret_access_key="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")
-#
-#     # return render_template('column_select.html')
-#     return json_payload, respond
 
 @app.route("/getcols", methods=["GET"])
 def get_cols():
     # R: Pass payload here (bucket config)
     return render_template("column_select.html")
 
-
-@app.route("/submit/", methods=["GET", "POST"])
+@app.route("/response", methods=["POST"])
 def select_cols_form():
-    print ('x')
+
+    aws_access_key_id = request.form.get('aws-access-key-id')
+    aws_access_secret_key = request.form.get('aws-access-secret-key')
+
+    src_bucket = request.form.get('source-s3-bucket')
+    src_path = request.form.get('source-path')
+
+    dst_bucket = request.form.get('target-s3-bucket')
+    dst_path = request.form.get('target-path')
+
+    schedule = request.form.get('schedule')
+    data_type, fields = utils.get_schema(s3_bucket=src_bucket, s3_path=src_path, aws_access_key_id=aws_access_key_id,
+                                         aws_secret_access_key=aws_access_secret_key)
     # # collect schema of data stored in s3
     req_data = request.data
     print(req_data)
     # R: can return 200 ok
-    return render_template("column_select.html")
+    return render_template('column_select.html', fileds=fields, data_type=data_type, aws_access_key_id=aws_access_key_id,
+                           aws_access_secret_key=aws_access_secret_key, src_bucket=src_bucket, src_path=src_path,
+                           target_bucket=dst_bucket, target_path=dst_path, schedule=schedule)
     # return redirect(url_for("getcols"))
 
+@app.route("/anonymize", methods=["POST"])
+def start_anonymize():
 
-# Listen for GET requests to yourdomain.com/sign_s3/
-#
-# Please see https://gist.github.com/RyanBalfanz/f07d827a4818fda0db81 for an example using
-# Python 3 for this view.
-@app.route('/sign-s3/')
-def sign_s3():
-    # Load necessary information into the application
-    S3_BUCKET = os.environ.get('S3_BUCKET')
-    S3_REGION = os.environ.get('S3_REGION')
+    aws_access_key_id = request.form.get('aws-access-key-id')
+    aws_access_secret_key = request.form.get('aws-access-secret-key')
 
-    # Load required data from the request
-    file_name = request.args.get('file-name')
-    file_type = request.args.get('file-type')
+    src_bucket = request.form.get('source-s3-bucket')
+    src_path = request.form.get('source-path')
 
-    # Initialise the S3 client
-
-    # if you have a CORS configured bucket that is only a few hours old,
-    # you may need to use path style addressing for generating pre-signed POSTs and URLs
-    # until the necessary DNS changes have time to propagagte.
-
-    s3 = boto3.client('s3',
-                      S3_REGION,
-                      config=Config(s3={'addressing_style': 'path'}))
-
-    # Generate and return the presigned URL
-    presigned_post = s3.generate_presigned_post(
-        Bucket=S3_BUCKET,
-        Key=file_name,
-        Fields={
-            "acl": "public-read",
-            "Content-Type": file_type},
-        Conditions=[
-            {"acl": "public-read"},
-            {"Content-Type": file_type}
-        ],
-        ExpiresIn=3600
-    )
-
-    # freshly created buckets take time to propagate, use regional endpoint for demo
-    # s3_base = s3.amazonaws.com
-    s3_base = 's3-%s.amazonaws.com' % S3_REGION
-
-    # Return the data to the client
-    return json.dumps({
-        'data': presigned_post,
-        'url': 'https://%s.%s/%s' % (S3_BUCKET, s3_base, file_name)
-    })
+    dst_bucket = request.form.get('target-s3-bucket')
+    dst_path = request.form.get('target-path')
+    data_formt = request.form.get('data_format')
+    schedule = request.form.get('schedule')
+    glue_wrapper = GlueWrapper(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_access_secret_key)
+    return None
+    glue_wrapper.anonymize(s3_bucket=src_bucket, s3_path=src_path, s3_bucket_dst=dst_bucket, fields=fields, data_format=data_formt, schedule=schedule)
+    return render_template('column_select.html')
 
 
 # Main code
