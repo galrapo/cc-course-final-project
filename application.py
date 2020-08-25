@@ -1,15 +1,21 @@
 ####
-# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
+# Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in
+# compliance with the License. You may obtain a copy of the License at
 #
 # http://www.apache.org/licenses/LICENSE-2.0
 #
-# Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+# Unless required by applicable law or agreed to in writing, software distributed under the License
+# is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or
+# implied. See the License for the specific language governing permissions and limitations under the License.
+#
 ####
 
 
-from flask import Flask, render_template, request, redirect, url_for
-from botocore.client import Config
-import os, json, boto3, logging
+import logging
+import os
+
+from flask import Flask, render_template, request
+
 import utils
 from glue_wrapper import GlueWrapper
 
@@ -28,14 +34,6 @@ def account():
     # Show the upload HTML page:
     return render_template('anonymize_request.html')
 
-@app.route("/submit-form/")
-def submit_form():
-    return render_template('anonymize_request.html')
-
-@app.route("/getcols", methods=["GET"])
-def get_cols():
-    # R: Pass payload here (bucket config)
-    return render_template("column_select.html")
 
 @app.route("/response", methods=["POST"])
 def select_cols_form():
@@ -56,10 +54,11 @@ def select_cols_form():
     req_data = request.data
     print(req_data)
     # R: can return 200 ok
-    return render_template('column_select.html', fileds=fields, data_type=data_type, aws_access_key_id=aws_access_key_id,
-                           aws_access_secret_key=aws_access_secret_key, src_bucket=src_bucket, src_path=src_path,
+    return render_template('column_select.html', fileds=fields, data_type=data_type,
+                           aws_access_key_id=aws_access_key_id, aws_access_secret_key=aws_access_secret_key,
+                           src_bucket=src_bucket, src_path=src_path,
                            target_bucket=dst_bucket, target_path=dst_path, schedule=schedule)
-    # return redirect(url_for("getcols"))
+
 
 @app.route("/anonymize", methods=["POST"])
 def start_anonymize():
@@ -71,7 +70,6 @@ def start_anonymize():
     src_path = request.form.get('source-path')
 
     dst_bucket = request.form.get('target-s3-bucket')
-    dst_path = request.form.get('target-path')
     data_format = request.form.get('data-type')
     schedule = request.form.get('schedule')
     glue_wrapper = GlueWrapper(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_access_secret_key)
@@ -83,11 +81,12 @@ def start_anonymize():
     for f in all_fields:
         fields[f] = f in fields_to_keep
 
-    name, id, dest = glue_wrapper.anonymize(s3_bucket=src_bucket, s3_path=src_path, s3_bucket_dst=dst_bucket,
-                                            fields=fields, data_format=data_format, schedule=schedule)
+    name, user_id, dest = glue_wrapper.anonymize(s3_bucket=src_bucket, s3_path=src_path, s3_bucket_dst=dst_bucket,
+                                                 fields=fields, data_format=data_format, schedule=schedule)
 
-    url = 'https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logEventViewer:group=/aws/elastic-anonymization-service/jobs/output;stream=log-' + name
-    return render_template('done.html', name=name, id=id, target=dst_bucket, url=url)
+    url = 'https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logEventViewer:group=/aws/' \
+          'elastic-anonymization-service/jobs/output;stream=log-' + name
+    return render_template('done.html', name=name, id=user_id, target=dst_bucket, url=url)
 
 
 # Main code
