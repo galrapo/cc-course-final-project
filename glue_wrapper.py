@@ -11,6 +11,11 @@ def get_code_path():
 
 class GlueWrapper(object):
 
+    """
+    This class handles all anonymization for tabular data.
+    It Uses Glue, S3, IAM and STS to detect the data, put it into a table and then remove
+    the required information before passing the data to a new bucket.
+    """
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_session_token=None):
 
         self.aws_access_key_id = aws_access_key_id
@@ -25,14 +30,11 @@ class GlueWrapper(object):
                                            aws_secret_access_key=aws_secret_access_key)
             self.sts_client = boto3.client('sts', aws_access_key_id=aws_access_key_id,
                                            aws_secret_access_key=aws_secret_access_key)
-            self.log_client = boto3.client('logs', aws_access_key_id=aws_access_key_id,
-                                           aws_secret_access_key=aws_secret_access_key)
         else:
             self.client = boto3.client('glue', aws_session_token=aws_session_token)
             self.s3_client = boto3.client('s3', aws_session_token=aws_session_token)
             self.iam_client = boto3.client('iam', aws_session_token=aws_session_token)
             self.sts_client = boto3.client('sts', aws_session_token=aws_session_token)
-            self.log_client = boto3.client('logs', aws_session_token=aws_session_token)
 
         self.account_id = self.sts_client.get_caller_identity().get('Account')
 
@@ -42,6 +44,18 @@ class GlueWrapper(object):
 
     def anonymize(self, s3_bucket, s3_path, s3_bucket_dst, fields: dict, data_format, schedule):
 
+        """
+        main entry point.
+        orchestrate the entire process
+        :param s3_bucket: input bucket (without s3:// prefix)
+        :param s3_path: the path for a file or a directory in the bucket
+        :param s3_bucket_dst: target bucket, where result data will be saved (without s3:// prefix)
+        :param fields: a dictionary of fields defining which data fields should be passed and which
+        should be dropped.
+        :param data_format: the format of the data (json, csv, parquet)
+        :param schedule: defining the schedule for the task (ONCE | DAILY | WEEKLY)
+        :return:
+        """
         time_signature = datetime.now().strftime("%d%m%Y%H%M%S")
 
         if not s3_path.startswith('/'):
@@ -54,25 +68,34 @@ class GlueWrapper(object):
             schedule_string = 'cron(0 0 * * 0)'
 
         try:
+            # create a glue db
             db_name = self.create_db(time_signature)
+            # create an IAM role to allow Glue to access the S3 bucket and execute all requests
             role_arn, role_name = self.create_role(db_name=db_name, s3_bucket=s3_bucket, s3_path=s3_path,
                                                    s3_bucket_dst=s3_bucket_dst)
-            time.sleep(10)
+            time.sleep(10) # wait for the role to become active
+            # create a crawler to populate a table with the data extracted from the S3 bucket
             crawler_name = self.create_crawler(db_name=db_name, s3_bucket=s3_bucket,
                                                s3_path=s3_path, role_arn=role_arn, schedule_string=schedule_string)
             self.start_crawler(crawler_name)
+
+            # create target and auxiliary buckets
             self.create_bucket(s3_bucket_dst)
             script_bucket = 'aws-glue-scripts-' + self.account_id
             self.create_bucket(script_bucket)
             table_name = s3_path.split('/')[-1]
+
+            # build the transition script which will drop the defined fields from the data and save it in a new bucket
             script_path = self.upload_transition_script(time_signature, get_code_path() + '/script2.py', script_bucket=script_bucket,
                                                         fields=fields, table_name=table_name)
+            # create and launch a job using the script
             job_name = self.creat_job(base_name=time_signature, role_arn=role_arn, s3_script_bucket=script_bucket,
                                       script_path=script_path, db_name=db_name, table_name=table_name,
                                       s3_bucket_dst=s3_bucket_dst,
                                       s3_path=s3_path, data_format=data_format)
             self.run_job(job_name=job_name)
 
+            # if needed, schedule the job to run periodically
             if schedule_string != '':
                 self.create_trigger(base_name=time_signature, crawler_name=crawler_name, job_name=job_name,
                                     schedule_string=schedule_string)

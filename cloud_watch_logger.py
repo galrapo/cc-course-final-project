@@ -9,6 +9,9 @@ def default(o):
 
 class CloudWatchLogger(object):
 
+    """
+    a logger class that publish the logs to CloudWatch
+    """
     def __init__(self, aws_access_key_id, aws_secret_access_key, log_group, aws_session_token=None):
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
@@ -24,6 +27,11 @@ class CloudWatchLogger(object):
         self.log_list = []
 
     def flush(self, base_name):
+        """
+        Send the logs to CloudWatch. Logs will not show up in CloudWatch until this function is called
+        :param base_name: name for the log
+        :return:
+        """
         try:
             response = self.log_client.describe_log_groups(
                 logGroupNamePrefix=self.log_group,
@@ -54,6 +62,13 @@ class CloudWatchLogger(object):
             print(e)
 
     def log(self, message, response_dict=None):
+
+        """
+        Add a log entry. a timestamp will be added to each entry.
+        :param message:
+        :param response_dict: a dictionary containing a boto3 standard response
+        :return:
+        """
         if response_dict is not None:
             message = message + json.dumps(response_dict, indent=4, default=default)
 
