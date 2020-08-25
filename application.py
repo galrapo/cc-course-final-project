@@ -72,12 +72,22 @@ def start_anonymize():
 
     dst_bucket = request.form.get('target-s3-bucket')
     dst_path = request.form.get('target-path')
-    data_formt = request.form.get('data_format')
+    data_format = request.form.get('data-type')
     schedule = request.form.get('schedule')
     glue_wrapper = GlueWrapper(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_access_secret_key)
-    return None
-    glue_wrapper.anonymize(s3_bucket=src_bucket, s3_path=src_path, s3_bucket_dst=dst_bucket, fields=fields, data_format=data_formt, schedule=schedule)
-    return render_template('column_select.html')
+
+    all_fields = [x.split('.')[-1] for x in list(request.form) if x.startswith('field.hidden')]
+    fields_to_keep = [x.split('.')[-1] for x in list(request.form) if x.startswith('field.select')]
+
+    fields = {}
+    for f in all_fields:
+        fields[f] = f in fields_to_keep
+
+    name, id, dest = glue_wrapper.anonymize(s3_bucket=src_bucket, s3_path=src_path, s3_bucket_dst=dst_bucket,
+                                            fields=fields, data_format=data_format, schedule=schedule)
+
+    url = 'https://console.aws.amazon.com/cloudwatch/home?region=us-east-1#logEventViewer:group=/aws/elastic-anonymization-service/jobs/output;stream=log-' + name
+    return render_template('done.html', name=name, id=id, target=dst_bucket, url=url)
 
 
 # Main code

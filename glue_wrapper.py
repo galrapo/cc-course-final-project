@@ -5,6 +5,10 @@ from cloud_watch_logger import CloudWatchLogger
 import time
 
 
+def get_code_path():
+    return "/" + "/".join(__file__.split('/')[:-1])
+
+
 class GlueWrapper(object):
 
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_session_token=None):
@@ -54,14 +58,11 @@ class GlueWrapper(object):
             crawler_name = self.create_crawler(db_name=db_name, s3_bucket=s3_bucket,
                                                s3_path=s3_path, role_arn=role_arn, schedule_string=schedule_string)
             self.start_crawler(crawler_name)
-            self._log_flush(time_signature)
             self.create_bucket(s3_bucket_dst)
             script_bucket = 'aws-glue-scripts-' + self.account_id
             self.create_bucket(script_bucket)
-            script_bucket = 'aws-glue-temporary-' + self.account_id
-            self.create_bucket(script_bucket)
             table_name = s3_path.split('/')[-1]
-            script_path = self.upload_transition_script(time_signature, './script2.py', script_bucket=script_bucket,
+            script_path = self.upload_transition_script(time_signature, get_code_path() + '/script2.py', script_bucket=script_bucket,
                                                         fields=fields, table_name=table_name)
             job_name = self.creat_job(base_name=time_signature, role_arn=role_arn, s3_script_bucket=script_bucket,
                                       script_path=script_path, db_name=db_name, table_name=table_name,
@@ -76,6 +77,8 @@ class GlueWrapper(object):
             self._log('job ended with exception: ' + str(e))
         finally:
             self._log_flush(time_signature)
+
+        return time_signature, self.account_id, s3_bucket_dst
 
     def _log_flush(self, base_name):
         self.logger.flush(base_name)
@@ -188,7 +191,7 @@ class GlueWrapper(object):
     def creat_job(self, base_name, role_arn, s3_script_bucket, script_path, db_name, table_name, s3_bucket_dst,
                   s3_path, data_format):
 
-        job_name = 'job' + base_name
+        job_name = 'job-' + base_name
         self._log("Creating job: " + job_name)
 
         response = self.client.create_job(

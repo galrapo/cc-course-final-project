@@ -49,38 +49,24 @@
           <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
       </div>
       <br>
-
-        <form method="POST" action="/anonymize">
-        <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
-        <p id="fileds" ; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
-                Data detected in the bucket: {{data_type}}</p>
-
-        <input type="hidden" name="aws-access-key-id" value="{{aws_access_key_id}}">
-        <input type="hidden" name="aws-access-secret-key" value="{{aws_access_secret_key}}">
-        <input type="hidden" name="source-s3-bucket" value="{{src_bucket}}">
-        <input type="hidden" name="source-path" value="{{src_path}}">
-        <input type="hidden" name="source-s3-region" value="{{source_s3_region}}">
-        <input type="hidden" name="target-s3-bucket" value="{{target_bucket}}">
-        <input type="hidden" name="target-path" value="{{target_path}}">
-        <input type="hidden" name="target-s3-region" value="{{target_s3_region}}">
-        <input type="hidden" name="data-type" value="{{data_type}}">
-        <input type="hidden" name="schedule" value="{{schedule}}">
-
-        {% if fileds %}
-        <p style="font-size:15px; margin-bottom:0.3cm;">
-            Please select which columns should be anonymized. <br>Only columns positively checked will be passed:
-        </p>
-            <div class="fields">
-            {% for filed in fileds %}
-                <input type="checkbox" id="{{filed}}" name="field.select.{{filed}}" value="{{filed}}" checked="checked">
-                <input type="hidden" name="field.hidden.{{filed}}" value="field">
-                <label for="{{filed}}"> {{filed}}</label><br>
-            {% endfor %}
-            </div>
-        {% endif %}
-        <input type="submit" name="submit-anonymize" value="Create Anonymizer" size="">
+    <div style="margin-left: 30%; margin-bottom: 50px">
+        <h2 style="font-family:verdana,sans-serif;">Done!</h2>
+        <p>You can find a full log on your AWS <a href="{{ url }}">CloudWatch</a></p>
+        <div style="font-family:Courier, Courier, monospace">
+        <p># reated a new Database in AWS Glue: database-{{name}}</p>
+        <p># Created a new IAM Role: AmazonSageMaker-ExecutionRole-{{ name }}</p>
+        <p># Created a new Glue Crawler: database-{{ name }}-crawler</p>
+        <p># Started Crawler: database-{{ name }}-crawler</p>
+        <p># Started Crawler: database-{{ name }}-crawler</p>
+        <p># Created an S3 Bucket for Glue scripts: aws-glue-scripts-{{ id }}</p>
+        <p># Uploaded transition script to scripts bucket</p>
+        <p># Created target bucket {{ target }}</p>
+        <p># Created a Glue Job: job-{{ name }}</p>
+        <p># Started job: job-{{ name }}</p>
+        <p># Created a Glue Trigger: trigger-{{ name }}</p>
         </div>
-        </form>
+        <h2 style="font-family:verdana,sans-serif;">...Data will start flowing to destination soon...</h2>
+    </div>
 
 
 
