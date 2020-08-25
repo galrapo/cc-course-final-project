@@ -44,6 +44,9 @@ class GlueWrapper(object):
 
         time_signature = datetime.now().strftime("%d%m%Y%H%M%S")
 
+        if not s3_path.startswith('/'):
+            s3_path = "/" + s3_path
+
         schedule_string = ''
         if schedule == 'DAILY':
             schedule_string = 'cron(15 12 * * ? *)'
@@ -247,7 +250,7 @@ class GlueWrapper(object):
         return buckets
 
     def upload_to_s3(self, body, bucket, key):
-        self._log("Uploading to s2: " + bucket + "/" + key)
+        self._log("Uploading to s3: " + bucket + "/" + key)
         response = self.s3_client.put_object(
             ACL='private',
             Body=str.encode(body),
