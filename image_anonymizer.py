@@ -1,20 +1,11 @@
 import os
-from pathlib import Path
 import boto3
-import pydicom
-import cv2
-import json
 import io
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
 from PIL import Image
 import numpy as np
-import matplotlib as mpl
 from botocore.exceptions import ClientError
-from imageio import imread
-import base64
-# import cStringIO
-from io import StringIO
 
 redacted_box_color = 'black'
 dpi = 72
