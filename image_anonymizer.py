@@ -1,3 +1,4 @@
+import json
 import os
 import boto3
 import io
@@ -148,7 +149,6 @@ class ImageAnonymizer():
                                      facecolor=redacted_box_color)
             ax.add_patch(rect)
 
-        # Ensure that no axis or whitespaces is printed in the image img_buffer we want to save.
         plt.axis('off')
         plt.gca().xaxis.set_major_locator(plt.NullLocator())
         plt.gca().yaxis.set_major_locator(plt.NullLocator())
@@ -256,5 +256,19 @@ def test():
                          dest_bucket='final-project-data-anonymized')
 
 
-if __name__ == '__main__':
-    test()
+def lambda_handler(event, context):
+    src_bucket = event['Records'][0]['s3']['bucket']['name']
+    src_path = event['Records'][0]['object']['key']
+    dest_bucket = os.environ['DEST_PATH']
+
+    IA = ImageAnonymizer(aws_access_key_id=os.environ['ACCESS_KEY'],
+                         aws_secret_access_key=os.environ['SECRET_KEY'])
+
+    IA.anonymize_img(src_bucket=src_bucket,
+                     src_path=src_path,
+                     dest_bucket=dest_bucket)
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Anonymization accomplished successfully!')
+    }
