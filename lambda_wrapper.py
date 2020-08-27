@@ -16,7 +16,7 @@ class LambdaWrapper(BaseWrapper):
 
         if aws_session_token is None:
             self.client = boto3.client('lambda', aws_access_key_id=aws_access_key_id,
-                                           aws_secret_access_key=aws_secret_access_key)
+                                       aws_secret_access_key=aws_secret_access_key)
         else:
             self.client = boto3.client('lambda', aws_session_token=aws_session_token)
 
@@ -29,10 +29,10 @@ class LambdaWrapper(BaseWrapper):
         func_arn = self.create_lambda(lambda_name=lambda_name, target_bucket=dst_bucket, role_arn=role_arn)
         self.create_bucket(lambda_name + '-queue')
         self.add_lambda_trigger(func_arn=func_arn, bucket_name=lambda_name + '-queue', func_name=lambda_name,
-                                statement_id='from-queue') # to queue bucket
+                                statement_id='from-queue')  # to queue bucket
         if continue_sync:
             self.add_lambda_trigger(func_arn=func_arn, bucket_name=src_bucket, func_name=lambda_name,
-                                    statement_id='from-src') # to original bucket
+                                    statement_id='from-src')  # to original bucket
 
         t = threading.Thread(target=self.copy_to_queue, args=(src_bucket, src_path, dst_bucket))
         t.start()
@@ -46,8 +46,8 @@ class LambdaWrapper(BaseWrapper):
             Role=role_arn,
             Handler='image_anonymizer.lambda_handler',
             Code={
-                'S3Bucket': 'hw2-data', ##TODO
-                'S3Key': 'Archive 2.zip', ##TODO
+                'S3Bucket': 'anonymization-service-public',
+                'S3Key': 'copy-anonynize.v1.zip',
             },
             Description='a function to copy an image from one bucket to another while anonymizing it',
             Timeout=900,
@@ -76,16 +76,16 @@ class LambdaWrapper(BaseWrapper):
         response = self.iam_client.create_role(
             RoleName=role_name,
             AssumeRolePolicyDocument=json.dumps({
-              "Version": "2012-10-17",
-              "Statement": [
-                {
-                  "Effect": "Allow",
-                  "Principal": {
-                    "Service": "lambda.amazonaws.com"
-                  },
-                  "Action": "sts:AssumeRole"
-                }
-              ]
+                "Version": "2012-10-17",
+                "Statement": [
+                    {
+                        "Effect": "Allow",
+                        "Principal": {
+                            "Service": "lambda.amazonaws.com"
+                        },
+                        "Action": "sts:AssumeRole"
+                    }
+                ]
             }),
             Path='/service-role/'
         )
