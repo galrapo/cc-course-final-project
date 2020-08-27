@@ -1,4 +1,3 @@
-import json
 import os
 import boto3
 import io
@@ -16,18 +15,41 @@ valid_list_img_suffix = ['jpg', 'jpeg', 'png', 'tiff', 'dcm', 'JPG', 'JPEG', 'PN
 
 
 class ImageAnonymizer():
-    def __init__(self, aws_access_key_id, aws_secret_access_key):
+    def __init__(self, aws_access_key_id, aws_secret_access_key, aws_session_token=None):
         self.aws_access_key_id = aws_access_key_id
         self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = boto3.Session(aws_access_key_id=aws_access_key_id,
-                                      aws_secret_access_key=aws_secret_access_key)
-        self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
-                                      aws_secret_access_key=aws_secret_access_key)
-        self.rekognition = boto3.client('rekognition', aws_access_key_id=aws_access_key_id,
-                                        aws_secret_access_key=aws_secret_access_key)
-        self.comprehend_medical = boto3.client(service_name='comprehendmedical',
-                                               aws_access_key_id=aws_access_key_id,
-                                               aws_secret_access_key=aws_secret_access_key)
+        self.aws_session_token = aws_session_token
+        if aws_session_token is None:
+            self.aws_session_token = boto3.Session(profile_name='default')
+            # self.client = boto3.client('glue', aws_access_key_id=aws_access_key_id,
+            #                            aws_secret_access_key=aws_secret_access_key)
+            self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
+                                          aws_secret_access_key=aws_secret_access_key)
+            self.iam_client = boto3.client('iam', aws_access_key_id=aws_access_key_id,
+                                           aws_secret_access_key=aws_secret_access_key)
+            # self.sts_client = boto3.client('sts', aws_access_key_id=aws_access_key_id,
+            #                                aws_secret_access_key=aws_secret_access_key)
+            self.log_client = boto3.client('logs', aws_access_key_id=aws_access_key_id,
+                                           aws_secret_access_key=aws_secret_access_key)
+            self.rekognition = boto3.client('rekognition', aws_access_key_id=aws_access_key_id,
+                                            aws_secret_access_key=aws_secret_access_key)
+            self.comprehend_medical = boto3.client(service_name='comprehendmedical',
+                                                   aws_access_key_id=aws_access_key_id,
+                                                   aws_secret_access_key=aws_secret_access_key)
+
+        else:
+            # self.client = boto3.client('glue', aws_session_token=aws_session_token)
+            self.s3_client = boto3.client('s3', aws_session_token=aws_session_token)
+            self.iam_client = boto3.client('iam', aws_session_token=aws_session_token)
+            # self.sts_client = boto3.client('sts', aws_session_token=aws_session_token)
+            self.log_client = boto3.client('logs', aws_session_token=aws_session_token)
+            self.rekognition = boto3.client('rekognition')
+            self.comprehend_medical = boto3.client(service_name='comprehendmedical')
+
+        # self.account_id = self.sts_client.get_caller_identity().get('Account')
+        # self.logger = CloudWatchLogger(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+        #                                aws_session_token=aws_session_token,
+        #                                log_group='/aws/elastic-anonymization-service/jobs/output')
 
     def anonymize_by_path(self, src_bucket, src_path, dest_bucket):
         response = self.s3_client.list_objects_v2(Bucket=src_bucket, Prefix=src_path)
@@ -126,6 +148,7 @@ class ImageAnonymizer():
                                      facecolor=redacted_box_color)
             ax.add_patch(rect)
 
+        # Ensure that no axis or whitespaces is printed in the image img_buffer we want to save.
         plt.axis('off')
         plt.gca().xaxis.set_major_locator(plt.NullLocator())
         plt.gca().yaxis.set_major_locator(plt.NullLocator())
