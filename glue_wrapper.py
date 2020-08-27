@@ -1,7 +1,8 @@
 import json
 import boto3
 from datetime import datetime
-from cloud_watch_logger import CloudWatchLogger
+
+from base_wrapper import BaseWrapper
 import time
 
 
@@ -9,7 +10,7 @@ def get_code_path():
     return "/" + "/".join(__file__.split('/')[:-1])
 
 
-class GlueWrapper(object):
+class GlueWrapper(BaseWrapper):
 
     """
     This class handles all anonymization for tabular data.
@@ -18,29 +19,14 @@ class GlueWrapper(object):
     """
     def __init__(self, aws_access_key_id, aws_secret_access_key, aws_session_token=None):
 
-        self.aws_access_key_id = aws_access_key_id
-        self.aws_secret_access_key = aws_secret_access_key
-        self.aws_session_token = aws_session_token
+        super().__init__(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
+                         aws_session_token=aws_session_token)
+
         if aws_session_token is None:
             self.client = boto3.client('glue', aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_access_key)
-            self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
-                                          aws_secret_access_key=aws_secret_access_key)
-            self.iam_client = boto3.client('iam', aws_access_key_id=aws_access_key_id,
-                                           aws_secret_access_key=aws_secret_access_key)
-            self.sts_client = boto3.client('sts', aws_access_key_id=aws_access_key_id,
-                                           aws_secret_access_key=aws_secret_access_key)
         else:
             self.client = boto3.client('glue', aws_session_token=aws_session_token)
-            self.s3_client = boto3.client('s3', aws_session_token=aws_session_token)
-            self.iam_client = boto3.client('iam', aws_session_token=aws_session_token)
-            self.sts_client = boto3.client('sts', aws_session_token=aws_session_token)
-
-        self.account_id = self.sts_client.get_caller_identity().get('Account')
-
-        self.logger = CloudWatchLogger(aws_access_key_id=aws_access_key_id, aws_secret_access_key=aws_secret_access_key,
-                                       aws_session_token=aws_session_token,
-                                       log_group='/aws/elastic-anonymization-service/jobs/output')
 
     def anonymize(self, s3_bucket, s3_path, s3_bucket_dst, fields: dict, data_format, schedule):
 
@@ -73,7 +59,7 @@ class GlueWrapper(object):
             # create an IAM role to allow Glue to access the S3 bucket and execute all requests
             role_arn, role_name = self.create_role(db_name=db_name, s3_bucket=s3_bucket, s3_path=s3_path,
                                                    s3_bucket_dst=s3_bucket_dst)
-            time.sleep(10) # wait for the role to become active
+            time.sleep(10)  # wait for the role to become active
             # create a crawler to populate a table with the data extracted from the S3 bucket
             crawler_name = self.create_crawler(db_name=db_name, s3_bucket=s3_bucket,
                                                s3_path=s3_path, role_arn=role_arn, schedule_string=schedule_string)
@@ -86,7 +72,8 @@ class GlueWrapper(object):
             table_name = s3_path.split('/')[-1]
 
             # build the transition script which will drop the defined fields from the data and save it in a new bucket
-            script_path = self.upload_transition_script(time_signature, get_code_path() + '/script2.py', script_bucket=script_bucket,
+            script_path = self.upload_transition_script(time_signature, get_code_path() + '/script2.py',
+                                                        script_bucket=script_bucket,
                                                         fields=fields, table_name=table_name)
             # create and launch a job using the script
             job_name = self.creat_job(base_name=time_signature, role_arn=role_arn, s3_script_bucket=script_bucket,
@@ -105,13 +92,6 @@ class GlueWrapper(object):
             self._log_flush(time_signature)
 
         return time_signature, self.account_id, s3_bucket_dst
-
-    def _log_flush(self, base_name):
-        self.logger.flush(base_name)
-
-    def _log(self, message, response_dict=None):
-        self.logger.log(message=message, response_dict=response_dict)
-        print(message)
 
     def create_db(self, base_name):
         db_name = datetime.now().strftime("database-" + base_name)
@@ -246,44 +226,6 @@ class GlueWrapper(object):
         )
         self._log("create_job response: ", response)
         return job_name
-
-    def create_bucket(self, bucket_name):
-
-        self._log("Creating bucket: " + bucket_name)
-        buckets = self.list_buckets()
-
-        if bucket_name in buckets:
-            self._log("Bucket exist: " + bucket_name)
-            return True
-
-        try:
-            response = self.s3_client.create_bucket(Bucket=bucket_name)
-            self._log("create_bucket response: ", response)
-        except Exception as e:
-            self._log(str(e))
-            return False
-        return True
-
-    def list_buckets(self):
-        response = self.s3_client.list_buckets()
-
-        buckets = []
-        for bucket in response['Buckets']:
-            buckets.append(bucket["Name"])
-        return buckets
-
-    def upload_to_s3(self, body, bucket, key):
-        self._log("Uploading to s3: " + bucket + "/" + key)
-        response = self.s3_client.put_object(
-            ACL='private',
-            Body=str.encode(body),
-            Bucket=bucket,
-            ContentEncoding='utf-8',
-            ContentType='application/x-python-code',
-            Key=key,
-            StorageClass='STANDARD'
-        )
-        self._log("put_object response: ", response)
 
     def upload_transition_script(self, base_name, script_path, script_bucket, fields, table_name):
 
