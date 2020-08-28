@@ -20,12 +20,13 @@ def get_first_key(s3_client, bucket, prefix):
         Bucket=bucket, Prefix=prefix,
     )
 
-    for item in response['Contents']:
-        key = item['Key']
-        if key.find('.') > 0:
-            exp = key[key.rfind('.') + 1:]
-            if exp in types:
-                return key
+    if 'Contents' in response:
+        for item in response['Contents']:
+            key = item['Key']
+            if key.find('.') > 0:
+                exp = key[key.rfind('.') + 1:]
+                if exp in types or exp in image_types:
+                    return key
     return None
 
 
@@ -36,6 +37,10 @@ def get_schema(s3_bucket, s3_path, aws_access_key_id, aws_secret_access_key):
                              aws_secret_access_key=aws_secret_access_key)
 
     key = get_first_key(s3_client, s3_bucket, s3_path)
+
+    if key is None:
+        return None, None
+
     response = s3_client.get_object(Bucket=s3_bucket, Key=key)
 
     extension = ''

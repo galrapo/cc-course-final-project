@@ -27,7 +27,8 @@ class LambdaWrapper(BaseWrapper):
                                                func_name=lambda_name)
         time.sleep(10)
         func_arn = self.create_lambda(lambda_name=lambda_name, target_bucket=dst_bucket, role_arn=role_arn)
-        self.create_bucket(lambda_name + '-queue')
+        self.create_bucket(bucket_name=lambda_name + '-queue')
+        self.create_bucket(bucket_name=dst_bucket)
         self.add_lambda_trigger(func_arn=func_arn, bucket_name=lambda_name + '-queue', func_name=lambda_name,
                                 statement_id='from-queue')  # to queue bucket
         if continue_sync:
@@ -36,6 +37,9 @@ class LambdaWrapper(BaseWrapper):
 
         t = threading.Thread(target=self.copy_to_queue, args=(src_bucket, src_path, dst_bucket))
         t.start()
+        self._log_flush(base_name)
+
+        return base_name, lambda_name, role_name, lambda_name + '-queue'
 
     def create_lambda(self, lambda_name, target_bucket, role_arn):
 
@@ -173,5 +177,4 @@ class LambdaWrapper(BaseWrapper):
         for k in src.objects.all():
             if k.key.startswith(src_path):
                 dst.copy({'Bucket': src.name, 'Key': k.key}, k.key)
-
 

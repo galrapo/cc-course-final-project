@@ -72,7 +72,7 @@
             <strong>Source:</strong>&nbsp;&nbsp;
             <label><small>Bucket: <input type="text" name="source-s3-bucket" placeholder="S3 bucket name" required>
             </small></label>
-            <label><small>Path: <input type="text" name="source-path" placeholder="S3 path" required>
+            <label><small>Path: <input type="text" name="source-path" placeholder="S3 path">
             </small></label>
             &nbsp;&nbsp;&nbsp;&nbsp;
             <label><small>Region: <input type="text" name="source-s3-region" placeholder="us-east-1">
@@ -82,7 +82,7 @@
             <strong>Target:</strong>&nbsp;&nbsp;
             <label><small>Bucket: <input type="text" name="target-s3-bucket" placeholder="S3 bucket name" required>
             </small></label>
-            <label><small>Path: <input type="text" name="target-path" placeholder="S3 path" required>
+            <label><small>Path: <input type="text" name="target-path" placeholder="S3 path" >
             </small></label>&nbsp;
             <label><small>Region: <input type="text" name="target-s3-region" placeholder="us-east-1">
             </small></label>
@@ -102,6 +102,11 @@
                 </div>
             </small></label>
 
+            {% if error %}
+            <p style="font-size:15px; margin-bottom:0.3cm; color: red">
+                Error: {{ error }}
+            </p>
+            {% endif %}
             <br><br>
             <input type="submit" name="submit-anonymize" value="Get Schema" size="">
         </div>

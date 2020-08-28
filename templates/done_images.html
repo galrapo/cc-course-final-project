@@ -1,0 +1,78 @@
+<html xmlns="http://www.w3.org/1999/html">
+    <head>
+        <style>
+            footer {
+                text-align: center;
+                padding: 3px;
+                background-color: dodgerblue;
+                color: white;
+                clear: both;
+                position:absolute;
+                bottom:0;
+                width:100%;
+                font-size: 13px;
+                font-family: "Lucinda Sans Unicode", sans-serif;
+            }
+            input[type="text"]{
+                text-align: center;
+
+            }
+            input[type=submit] {
+                width: 12em;
+                height: 4em;
+                font-size: 16px;
+                font-weight: bold;
+                border-radius: 8px;
+                background-color: linen;
+                font-family: Noto Sans, sans-serif;
+                text-align: center;
+            }
+
+            .fields {
+                margin: 50px 0 50px 0;
+                text-align: left;
+                width: 30%;
+                position: relative;
+                left: 35%;
+                right: 35%;
+                 border: 1px solid #ccc !important;
+                border-radius: 16px;
+                padding: 30px;
+            }
+
+        </style>
+    </head>
+    <body>
+      <br>
+      <div style="text-align: center;font-size: x-large;">
+          <img src="https://final-project-app.s3.amazonaws.com/images/aws-annonymizer-logo.png" alt="AWS Annonymizer logo" style="width:250px;height:250px;">
+          <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
+      </div>
+      <br>
+    <div style="margin-left: 30%; margin-bottom: 50px">
+        <h2 style="font-family:verdana,sans-serif;">Done!</h2>
+        <p>You can find a full log on your AWS <a href="{{ url }}">CloudWatch</a></p>
+        <div style="font-family:Courier, Courier, monospace">
+        <p># Created a Lambda Function: {{lambda_name}}</p>
+        <p># Created a new IAM Role: {{ role_name }}</p>
+        <p># Created a new S3 Bucket: {{ queue_bucket_name }}</p>
+        <p># Connected an S3 trigger from queue bucket to lambda</p>
+        <p># Copying and anonymizing image files...</p>
+        </div>
+        <h2 style="font-family:verdana,sans-serif;">...Data will start flowing to destination soon...</h2>
+    </div>
+
+
+
+    </body>
+
+    <footer style="position: fixed">
+        <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all">
+            <strong>Built by:</strong>&nbsp;&nbsp; Gal Rapoport and Ofri Masad.
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            Provided as a final project to a Cloud Computing Course at IDC.
+            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+            August, 2020. &nbsp;&copy;
+        </div>
+    </footer>
+</html>

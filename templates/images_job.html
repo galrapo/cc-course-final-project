@@ -50,7 +50,7 @@
                 padding: 30px;
             }
 
-            .loader {
+             .loader {
                 border: 6px solid #f3f3f3;
                 border-radius: 50%;
                 border-top: 6px solid #3498db;
@@ -91,7 +91,9 @@
         <form method="POST" action="/anonymize">
         <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
         <p id="fileds" ; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
-                Data detected in the bucket: {{data_type}}</p>
+                Data detected in the bucket: {{data_type}}<br>
+            Click "Create Anonymizer" to start the process
+        </p>
 
         <input type="hidden" name="aws-access-key-id" value="{{aws_access_key_id}}">
         <input type="hidden" name="aws-access-secret-key" value="{{aws_access_secret_key}}">
@@ -106,22 +108,9 @@
 
         <div class="loader" id="loader" style="position: absolute;left: 48%; top: 52%; display: none" ></div>
 
-        {% if fileds %}
-        <p style="font-size:15px; margin-bottom:0.3cm;">
-            Please select which columns should be anonymized. <br>Only columns positively checked will be passed:
-        </p>
-            <div class="fields">
-            {% for filed in fileds %}
-                <input type="checkbox" id="{{filed}}" name="field.select.{{filed}}" value="{{filed}}" checked="checked">
-                <input type="hidden" name="field.hidden.{{filed}}" value="field">
-                <label for="{{filed}}"> {{filed}}</label><br>
-            {% endfor %}
-            </div>
-        {% endif %}
         <input type="submit" name="submit-anonymize" value="Create Anonymizer" size="" onclick="showLoader()">
         </div>
         </form>
-
 
 
     </body>
