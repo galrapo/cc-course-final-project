@@ -29,14 +29,31 @@
         }
 
         .src-container {
-            border: 1px solid #ccc !important;
-            border-radius: 16px;
-            padding: 10px;
+        {#border: 1px solid #ccc !important;#}{#border-radius: 16px;#} padding: 10px;
             margin: 10px;
             width: 70%;
             position: relative;
             left: 15%;
             right: 15%;
+        }
+
+        .button {
+            background-color: #3984C5 !important; /* Green */
+            border: none;
+            color: white;
+            border-radius: 0 !important;
+            padding: 2px 6px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            width: 9em !important;
+            height: 2em !important;
+        }
+
+        .button:hover {
+            background-color: #266191 !important;
         }
     </style>
 </head>
@@ -45,7 +62,7 @@
     <br>
     <div style="text-align: center;font-size: x-large; ">
         <img src="https://final-project-app.s3.amazonaws.com/images/aws-annonymizer-logo.png" alt="AWS Annonymizer logo"
-             style="width:250px;height:250px;">
+             style="width:220px;height:220px;">
         <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
         <p style="font-size: 17px;margin-bottom:0.4cm; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif"
            ;><big><strong>
@@ -59,9 +76,11 @@
         <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
             <p id="status" ; style="font-size:21px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
                 Enter AWS Credentials</p>
-            <label><small><strong>Access Key ID: <input type="text" name="aws-access-key-id" required> </strong></small></label>
+            <label><small><strong>Access Key ID: <input type="text" name="aws-access-key-id" style="width: 230px"
+                                                        required> </strong></small></label>
             &nbsp;&nbsp;&nbsp;&nbsp;
-            <label><small><strong>Secret Access key: <input type="password" name="aws-access-secret-key" required>
+            <label><small><strong>Secret Access key: <input type="password" name="aws-access-secret-key"
+                                                            style="width: 230px" required>
             </strong></small></label>
         </div>
         <br><br>
@@ -69,172 +88,46 @@
             <p id="status" ; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
                 Select AWS Data Source And A Target To Collect The Anonymized Data</p>
             <div class="src-container">
-            <strong>Source:</strong>&nbsp;&nbsp;
-            <label><small>Bucket: <input type="text" name="source-s3-bucket" placeholder="S3 bucket name" required>
-            </small></label>
-            <label><small>Path: <input type="text" name="source-path" placeholder="S3 path">
-            </small></label>
-            &nbsp;&nbsp;&nbsp;&nbsp;
-            <label><small>Region: <input type="text" name="source-s3-region" placeholder="us-east-1">
-            </small></label>
+                <strong>Source:</strong>&nbsp;&nbsp;
+                <label><small>Bucket: <input type="text" name="source-s3-bucket" placeholder="S3 bucket name" required>
+                </small></label>
+                <label><small>Path: <input type="text" name="source-path" placeholder="S3 path">
+                </small></label>
+                &nbsp;&nbsp;&nbsp;&nbsp;
+                <label><small>Region: <input type="text" name="source-s3-region" placeholder="us-east-1">
+                </small></label>
             </div>
-             <div class="src-container">
-            <strong>Target:</strong>&nbsp;&nbsp;
-            <label><small>Bucket: <input type="text" name="target-s3-bucket" placeholder="S3 bucket name" required>
-            </small></label>
-            <label><small>Path: <input type="text" name="target-path" placeholder="S3 path" >
-            </small></label>&nbsp;
-            <label><small>Region: <input type="text" name="target-s3-region" placeholder="us-east-1">
-            </small></label>
-             </div>
+            <div class="src-container">
+                <strong>Target:</strong>&nbsp;&nbsp;
+                <label><small>Bucket: <input type="text" name="target-s3-bucket" placeholder="S3 bucket name" required>
+                </small></label>
+                <label><small>Path: <input type="text" name="target-path" placeholder="S3 path">
+                </small></label>&nbsp;
+                <label><small>Region: <input type="text" name="target-s3-region" placeholder="us-east-1">
+                </small></label>
+            </div>
 
             <label><small>
-                <div class="src-container">
-                    <div style="text-align: left; width: 50%; position: relative; left: 25%;">
-                        Schedule:<br>
-                        <input type="radio" id="once" name="schedule" value="ONCE" checked="checked">
-                        <label for="daily">Copy data ony once</label><br>
-                        <input type="radio" id="daily" name="schedule" value="DAILY">
-                        <label for="daily">Sync data every day</label><br>
-                        <input type="radio" id="weekly" name="schedule" value="WEEKLY">
-                        <label for="weekly">Sync data every week</label>
-                    </div>
+                <div class="src-container" style="margin-top: 30px">
+
+                    <select name="schedule" id="cars">
+                        <option value="ONCE">Copy data ony once</option>
+                        <option value="DAILY">Sync data every day</option>
+                        <option value="WEEKLY">Sync data every week</option>
+                    </select>
                 </div>
             </small></label>
 
             {% if error %}
-            <p style="font-size:15px; margin-bottom:0.3cm; color: red">
-                Error: {{ error }}
-            </p>
+                <p style="font-size:15px; margin-bottom:0.3cm; color: red">
+                    Error: {{ error }}
+                </p>
             {% endif %}
             <br><br>
-            <input type="submit" name="submit-anonymize" value="Get Schema" size="">
+            <input class="button" type="submit" name="submit-anonymize" value="Get Schema" size="">
         </div>
     </form>
 
-    <script type="text/javascript">
-
-        /*
-          Function to carry out the actual POST request to S3 using the signed request from the Python app.
-        */
-        function uploadFile(file, s3Data, url) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('POST', s3Data.url);
-            xhr.setRequestHeader('x-amz-acl', 'public-read');
-
-            const postData = new FormData();
-            for (key in s3Data.fields) {
-                postData.append(key, s3Data.fields[key]);
-            }
-            postData.append('file', file);
-
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200 || xhr.status === 204) {
-                        document.getElementById('download-url').href = url;
-                        document.getElementById('report-url').value = url;
-                    } else {
-                        alert('Could not upload file.');
-                    }
-                }
-            };
-            xhr.send(postData);
-        }
-
-        const anonymizeColumnsUrl = "/submit/"
-
-        //const anonymizeColumnsUrl = "https://nvcdpkqa5k.execute-api.us-east-1.amazonaws.com/v1/define-columns"
-        function sendAnonymizationRequest(requestPayload) {
-            console.log("sendAnonymizationRequest")
-            // requestPayload includes AWS credentials and source/target bucket and region
-            const req = new XMLHttpRequest();
-            const postData = new FormData();
-            req.open('POST', anonymizeColumnsUrl) // TODO - check validity
-            req.setRequestHeader('x-amz-acl', 'public-read');
-            req.setRequestHeader('Content-Type', 'application/json')
-            for (let propertyName in requestPayload) {
-                if (requestPayload.hasOwnProperty(propertyName)) {
-                    postData.append(propertyName, requestPayload[propertyName])
-                }
-            }
-            req.onreadystatechange = function () {
-                if (this.readyState == 4 && this.status == 200) {
-                    let payload = '?a=1&b=2'
-                    window.location.href = '/getcols' + payload;
-                }
-            }
-            console.log(requestPayload)
-            req.send(requestPayload)
-            console.log("request sent")
-        }
-
-        /*
-          Function to get the temporary signed request from the Python app.
-          If request successful, continue to upload the file using this signed
-          request.
-        */
-        function getSignedRequest(file) {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', `/sign-s3?file-name=${file.name}&file-type=${file.type}`);
-            xhr.onreadystatechange = () => {
-                if (xhr.readyState === 4) {
-                    if (xhr.status === 200) {
-                        const response = JSON.parse(xhr.responseText);
-                        uploadFile(file, response.data, response.url);
-                    } else {
-                        alert('Could not get signed URL.');
-                    }
-                }
-            };
-            xhr.send();
-        }
-
-        function getS3Request() {
-
-        }
-
-        /*
-           Function called when file input updated. If there is a file selected, then
-           start upload procedure by asking for a signed request from the app.
-        */
-        function initUpload() {
-            const accessKeyId = document.getElementById('aws-access-key-id').value;
-            const accessSecretKey = document.getElementById('aws-access-secret-key').value;
-            if (!accessKeyId || !accessSecretKey) {
-                return alert('Missing Credentials.');
-            }
-            const sourceS3Bucket = document.getElementById('source-s3-bucket').value;
-            const sourceS3Region = document.getElementById('source-s3-region').value;
-            if (!sourceS3Bucket || !sourceS3Region) {
-                return alert('Missing source S3 data.');
-            }
-            const targetS3Bucket = document.getElementById('target-s3-bucket').value;
-            const targetS3Region = document.getElementById('target-s3-region').value;
-            if (!targetS3Bucket || !targetS3Region) {
-                return alert('Missing target S3 data.');
-            }
-            console.log("validation done")
-            let payload = {
-                "aws-access-key-id": accessKeyId,
-                "aws-access-secret-key": accessSecretKey,
-                "source-s3-bucket": sourceS3Bucket,
-                "source-s3-region": sourceS3Region,
-                "target-s3-bucket": targetS3Bucket,
-                "target-s3-region": targetS3Region
-            }
-            sendAnonymizationRequest(payload);
-        }
-
-        /*
-           Bind listeners when the page loads - to anonymize request submission.
-        */
-        (() => {
-            document.getElementById('submit-anonymize').addEventListener("click", initUpload)
-            console.log("Click")
-            {#document.getElementById('file-input').onchange = initUpload;#}
-        })();
-
-    </script>
 </div>
 <footer style="position: fixed">
     <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all; ">

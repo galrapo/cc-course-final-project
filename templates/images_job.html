@@ -1,127 +1,151 @@
 <html xmlns="http://www.w3.org/1999/html">
-    <head>
-        <script>
-            function showLoader() {
-                var x = document.getElementById("loader");
-                if (x.style.display === "none") {
-                    x.style.display = "block";
-                } else {
-                    x.style.display = "none";
-                }
+<head>
+    <script>
+        function showLoader() {
+            var x = document.getElementById("loader");
+            if (x.style.display === "none") {
+                x.style.display = "block";
+            } else {
+                x.style.display = "none";
             }
-        </script>
-        <style>
-            footer {
-                text-align: center;
-                padding: 3px;
-                background-color: dodgerblue;
-                color: white;
-                clear: both;
-                position:absolute;
-                bottom:0;
-                width:100%;
-                font-size: 13px;
-                font-family: "Lucinda Sans Unicode", sans-serif;
-            }
-            input[type="text"]{
-                text-align: center;
+        }
+    </script>
+    <style>
+        footer {
+            text-align: center;
+            padding: 3px;
+            background-color: dodgerblue;
+            color: white;
+            clear: both;
+            position: absolute;
+            bottom: 0;
+            width: 100%;
+            font-size: 13px;
+            font-family: "Lucinda Sans Unicode", sans-serif;
+        }
 
-            }
-            input[type=submit] {
-                width: 12em;
-                height: 4em;
-                font-size: 16px;
-                font-weight: bold;
-                border-radius: 8px;
-                background-color: linen;
-                font-family: Noto Sans, sans-serif;
-                text-align: center;
-            }
+        input[type="text"] {
+            text-align: center;
 
-            .fields {
-                margin: 50px 0 50px 0;
-                text-align: left;
-                width: 30%;
-                position: relative;
-                left: 35%;
-                right: 35%;
-                 border: 1px solid #ccc !important;
-                border-radius: 16px;
-                padding: 30px;
-            }
+        }
 
-             .loader {
-                border: 6px solid #f3f3f3;
-                border-radius: 50%;
-                border-top: 6px solid #3498db;
-                width: 30px;
-                height: 30px;
-                -webkit-animation: spin 2s linear infinite; /* Safari */
-                animation: spin 2s linear infinite;
-            }
+        input[type=submit] {
+            width: 12em;
+            height: 4em;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 8px;
+            background-color: linen;
+            font-family: Noto Sans, sans-serif;
+            text-align: center;
+        }
 
-            /* Safari */
-            @-webkit-keyframes spin {
-                0% {
-                    -webkit-transform: rotate(0deg);
-                }
-                100% {
-                    -webkit-transform: rotate(360deg);
-                }
-            }
+        .fields {
+            margin: 50px 0 50px 0;
+            text-align: left;
+            width: 30%;
+            position: relative;
+            left: 35%;
+            right: 35%;
+            border: 1px solid #ccc !important;
+            border-radius: 16px;
+            padding: 30px;
+        }
 
-            @keyframes spin {
-                0% {
-                    transform: rotate(0deg);
-                }
-                100% {
-                    transform: rotate(360deg);
-                }
-            }
-        </style>
-    </head>
-    <body>
-      <br>
-      <div style="text-align: center;font-size: x-large;">
-          <img src="https://final-project-app.s3.amazonaws.com/images/aws-annonymizer-logo.png" alt="AWS Annonymizer logo" style="width:250px;height:250px;">
-          <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
-      </div>
-      <br>
+        .loader {
+            border: 6px solid #f3f3f3;
+            border-radius: 50%;
+            border-top: 6px solid #3498db;
+            width: 30px;
+            height: 30px;
+            -webkit-animation: spin 2s linear infinite; /* Safari */
+            animation: spin 2s linear infinite;
+        }
 
-        <form method="POST" action="/anonymize">
-        <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
+        .button {
+            background-color: #3984C5 !important; /* Green */
+            border: none;
+            color: white;
+            border-radius: 0 !important;
+            padding: 2px 6px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 16px;
+            cursor: pointer;
+            width: 12em !important;
+            height: 2em !important;
+            margin-top: 30px;
+        }
+
+        .button:hover {
+            background-color: #266191 !important;
+        }
+
+        /* Safari */
+        @-webkit-keyframes spin {
+            0% {
+                -webkit-transform: rotate(0deg);
+            }
+            100% {
+                -webkit-transform: rotate(360deg);
+            }
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+<body>
+<br>
+<div style="text-align: center;font-size: x-large;">
+    <img src="https://final-project-app.s3.amazonaws.com/images/aws-annonymizer-logo.png" alt="AWS Annonymizer logo"
+         style="width:220px;height:220px;">
+    <h1 style="font-family:verdana,sans-serif;">AWS Data Anonymizer</h1>
+</div>
+<br>
+
+<form method="POST" action="/anonymize">
+    <div style="text-align: center; font-family:'Lucida Sans Unicode', 'Lucida Grande', sans-serif;">
         <p id="fileds" ; style="font-size:19px; margin-bottom:0.3cm; color: teal; font-weight: bolder">
-                Data detected in the bucket: {{data_type}}<br>
+            Data detected in the bucket: {{ data_type }}<br>
             Click "Create Anonymizer" to start the process
         </p>
 
-        <input type="hidden" name="aws-access-key-id" value="{{aws_access_key_id}}">
-        <input type="hidden" name="aws-access-secret-key" value="{{aws_access_secret_key}}">
-        <input type="hidden" name="source-s3-bucket" value="{{src_bucket}}">
-        <input type="hidden" name="source-path" value="{{src_path}}">
-        <input type="hidden" name="source-s3-region" value="{{source_s3_region}}">
-        <input type="hidden" name="target-s3-bucket" value="{{target_bucket}}">
-        <input type="hidden" name="target-path" value="{{target_path}}">
-        <input type="hidden" name="target-s3-region" value="{{target_s3_region}}">
-        <input type="hidden" name="data-type" value="{{data_type}}">
-        <input type="hidden" name="schedule" value="{{schedule}}">
+        <input type="hidden" name="aws-access-key-id" value="{{ aws_access_key_id }}">
+        <input type="hidden" name="aws-access-secret-key" value="{{ aws_access_secret_key }}">
+        <input type="hidden" name="source-s3-bucket" value="{{ src_bucket }}">
+        <input type="hidden" name="source-path" value="{{ src_path }}">
+        <input type="hidden" name="source-s3-region" value="{{ source_s3_region }}">
+        <input type="hidden" name="target-s3-bucket" value="{{ target_bucket }}">
+        <input type="hidden" name="target-path" value="{{ target_path }}">
+        <input type="hidden" name="target-s3-region" value="{{ target_s3_region }}">
+        <input type="hidden" name="data-type" value="{{ data_type }}">
+        <input type="hidden" name="schedule" value="{{ schedule }}">
 
-        <div class="loader" id="loader" style="position: absolute;left: 48%; top: 52%; display: none" ></div>
+        <div class="loader" id="loader" style="position: absolute;left: 48%; top: 39%; display: block"></div>
 
-        <input type="submit" name="submit-anonymize" value="Create Anonymizer" size="" onclick="showLoader()">
-        </div>
-        </form>
+        <input type="submit" class="button" name="submit-anonymize" value="Create Anonymizer" size=""
+               onclick="showLoader()">
+    </div>
+</form>
 
 
-    </body>
+</body>
 
-    <footer style="position: fixed">
-        <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all">
-            <strong>Built by:</strong>&nbsp;&nbsp; Gal Rapoport and Ofri Masad.
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            Provided as a final project to a Cloud Computing Course at IDC.
-            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-            August, 2020. &nbsp;&copy;
-        </div>
-    </footer>
+<footer style="position: fixed">
+    <div style="font-size: 12px; font-stretch: expanded; text-align: justify-all">
+        <strong>Built by:</strong>&nbsp;&nbsp; Gal Rapoport and Ofri Masad.
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        Provided as a final project to a Cloud Computing Course at IDC.
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        August, 2020. &nbsp;&copy;
+    </div>
+</footer>
 </html>
