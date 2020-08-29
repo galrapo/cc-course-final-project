@@ -70,6 +70,10 @@ class GlueWrapper(BaseWrapper):
             script_bucket = 'aws-glue-scripts-' + self.account_id
             self.create_bucket(script_bucket)
             table_name = s3_path.split('/')[-1]
+            if table_name == '':
+                table_name = s3_bucket
+
+            table_name = table_name.replace("-", "_")
 
             # build the transition script which will drop the defined fields from the data and save it in a new bucket
             script_path = self.upload_transition_script(time_signature, get_code_path() + '/script2.py',
@@ -232,16 +236,16 @@ class GlueWrapper(BaseWrapper):
         s3_cript_path = base_name + "-script.py"
         self._log("Uploading script: " + s3_cript_path)
 
-        fields_to_drop = '['
+        fields_to_keep = '['
         for field in fields:
-            if not fields[field]:
-                fields_to_drop += '\"%s.%s\",' % (table_name, field.lower())
-        fields_to_drop = fields_to_drop[:-1]
-        fields_to_drop += ']'
+            if fields[field]:
+                fields_to_keep += '(\"%s\", \"%s\"),' % (field.lower().replace("-", "_"), field.lower().replace("-", "_"))
+        fields_to_keep = fields_to_keep[:-1]
+        fields_to_keep += ']'
 
         with open(script_path, 'r') as file:
             data = file.read()
-            data = data.replace('[[PLACEHOLDER]]', fields_to_drop)
+            data = data.replace('[[PLACEHOLDER]]', fields_to_keep)
             self.upload_to_s3(data, script_bucket, base_name + "-script.py")
         return s3_cript_path
 
