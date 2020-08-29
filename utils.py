@@ -3,10 +3,12 @@ import json
 from json import JSONDecodeError
 import boto3
 import os
+
 region = os.environ['AWS_REGION']
 
 types = ['csv', 'json', 'gz']
 image_types = ['png', 'PNG', 'gif', 'GIF', 'jpg', 'JPG', 'jpeg', 'JPEG']
+
 
 def get_csv_cols(data):
     return data.splitlines()[0].split(',')
@@ -32,9 +34,7 @@ def get_first_key(s3_client, bucket, prefix):
     return None
 
 
-
 def get_schema(s3_bucket, s3_path, aws_access_key_id, aws_secret_access_key):
-
     s3_client = boto3.client('s3', region, aws_access_key_id=aws_access_key_id,
                              aws_secret_access_key=aws_secret_access_key)
 
@@ -48,7 +48,6 @@ def get_schema(s3_bucket, s3_path, aws_access_key_id, aws_secret_access_key):
     extension = ''
     if key.find('.') > 0:
         extension = key.split('.')[-1]
-
 
     content_type = response['ContentType']
     if content_type.find('image') > 0 or extension in image_types:
