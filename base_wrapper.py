@@ -1,6 +1,7 @@
 import boto3
 from cloud_watch_logger import CloudWatchLogger
-
+import os
+region = os.environ['AWS_REGION']
 
 def get_code_path():
     return "/" + "/".join(__file__.split('/')[:-1])
@@ -19,16 +20,16 @@ class BaseWrapper(object):
         self.aws_secret_access_key = aws_secret_access_key
         self.aws_session_token = aws_session_token
         if aws_session_token is None:
-            self.s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
+            self.s3_client = boto3.client('s3', region, aws_access_key_id=aws_access_key_id,
                                           aws_secret_access_key=aws_secret_access_key)
-            self.iam_client = boto3.client('iam', aws_access_key_id=aws_access_key_id,
+            self.iam_client = boto3.client('iam', region, aws_access_key_id=aws_access_key_id,
                                            aws_secret_access_key=aws_secret_access_key)
-            self.sts_client = boto3.client('sts', aws_access_key_id=aws_access_key_id,
+            self.sts_client = boto3.client('sts', region, aws_access_key_id=aws_access_key_id,
                                            aws_secret_access_key=aws_secret_access_key)
         else:
-            self.s3_client = boto3.client('s3', aws_session_token=aws_session_token)
-            self.iam_client = boto3.client('iam', aws_session_token=aws_session_token)
-            self.sts_client = boto3.client('sts', aws_session_token=aws_session_token)
+            self.s3_client = boto3.client('s3', region, aws_session_token=aws_session_token)
+            self.iam_client = boto3.client('iam', region, aws_session_token=aws_session_token)
+            self.sts_client = boto3.client('sts', region, aws_session_token=aws_session_token)
 
         self.account_id = self.sts_client.get_caller_identity().get('Account')
 

@@ -2,6 +2,8 @@ import gzip
 import json
 from json import JSONDecodeError
 import boto3
+import os
+region = os.environ['AWS_REGION']
 
 types = ['csv', 'json', 'gz']
 image_types = ['png', 'PNG', 'gif', 'GIF', 'jpg', 'JPG', 'jpeg', 'JPEG']
@@ -33,7 +35,7 @@ def get_first_key(s3_client, bucket, prefix):
 
 def get_schema(s3_bucket, s3_path, aws_access_key_id, aws_secret_access_key):
 
-    s3_client = boto3.client('s3', aws_access_key_id=aws_access_key_id,
+    s3_client = boto3.client('s3', region, aws_access_key_id=aws_access_key_id,
                              aws_secret_access_key=aws_secret_access_key)
 
     key = get_first_key(s3_client, s3_bucket, s3_path)

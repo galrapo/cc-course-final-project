@@ -4,7 +4,8 @@ from datetime import datetime
 import time
 import threading
 from base_wrapper import BaseWrapper
-
+import os
+region = os.environ['AWS_REGION']
 
 class LambdaWrapper(BaseWrapper):
 
@@ -15,10 +16,10 @@ class LambdaWrapper(BaseWrapper):
         self.aws_session_token = aws_session_token
 
         if aws_session_token is None:
-            self.client = boto3.client('lambda', aws_access_key_id=aws_access_key_id,
+            self.client = boto3.client('lambda', region, aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_access_key)
         else:
-            self.client = boto3.client('lambda', aws_session_token=aws_session_token)
+            self.client = boto3.client('lambda', region, aws_session_token=aws_session_token)
 
     def anonymize(self, src_bucket, src_path, dst_bucket, continue_sync):
         base_name = datetime.now().strftime("%d%m%Y%H%M%S")

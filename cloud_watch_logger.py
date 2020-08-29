@@ -1,7 +1,8 @@
 import json
 import boto3
 from datetime import datetime, date
-
+import os
+region = os.environ['AWS_REGION']
 
 def default(o):
     if isinstance(o, (date, datetime)):
@@ -19,10 +20,10 @@ class CloudWatchLogger(object):
         self.log_group = log_group
 
         if aws_session_token is None:
-            self.log_client = boto3.client('logs', aws_access_key_id=aws_access_key_id,
+            self.log_client = boto3.client('logs', region, aws_access_key_id=aws_access_key_id,
                                            aws_secret_access_key=aws_secret_access_key)
         else:
-            self.log_client = boto3.client('logs', aws_session_token=aws_session_token)
+            self.log_client = boto3.client('logs', region, aws_session_token=aws_session_token)
 
         self.log_list = []
 

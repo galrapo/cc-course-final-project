@@ -4,7 +4,8 @@ from datetime import datetime
 
 from base_wrapper import BaseWrapper
 import time
-
+import os
+region = os.environ['AWS_REGION']
 
 def get_code_path():
     return "/" + "/".join(__file__.split('/')[:-1])
@@ -23,10 +24,10 @@ class GlueWrapper(BaseWrapper):
                          aws_session_token=aws_session_token)
 
         if aws_session_token is None:
-            self.client = boto3.client('glue', aws_access_key_id=aws_access_key_id,
+            self.client = boto3.client('glue', region, aws_access_key_id=aws_access_key_id,
                                        aws_secret_access_key=aws_secret_access_key)
         else:
-            self.client = boto3.client('glue', aws_session_token=aws_session_token)
+            self.client = boto3.client('glue', region, aws_session_token=aws_session_token)
 
     def anonymize(self, s3_bucket, s3_path, s3_bucket_dst, fields: dict, data_format, schedule):
 
